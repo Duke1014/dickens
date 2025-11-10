@@ -44,3 +44,44 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Firebase setup
+
+This project is prepared to be connected to a Google Firebase project. Below are the recommended, minimal steps to get started.
+
+1. Create a Firebase project
+	- Go to https://console.firebase.google.com/ and create a new project (or use an existing one).
+
+2. Register a Web App (optional, for client SDK)
+	- In your Firebase project, create a Web App and copy the Firebase config values.
+
+3. Store config in environment variables (recommended)
+	- Create a file named `.env.local` at the repository root (it's already ignored by `.gitignore`).
+	- Add the following variables (replace placeholders with values from the Firebase console):
+
+```env
+REACT_APP_FIREBASE_API_KEY=your_api_key_here
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
+```
+
+4. Install the Firebase SDK
+	- Run: `npm install firebase` (or `yarn add firebase`) in the project root.
+
+5. Use the initializer
+	- A small initializer has been added at `src/firebase.ts`. Import `auth` and `db` where you need them:
+
+```ts
+import { auth, db } from './firebase';
+```
+
+6. (Optional) Firebase CLI and hosting
+	- Install the Firebase CLI (`npm install -g firebase-tools`) and run `firebase login` then `firebase init` to configure hosting and other services. Do not commit any service account JSON files or secrets.
+
+Security notes
+ - `.env.local` is listed in `.gitignore` by default. Do not commit secrets or service account JSON files. If you use a server-side service account, keep the JSON file outside the repo and reference it in your CI/CD secrets instead.
+
