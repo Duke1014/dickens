@@ -10,6 +10,7 @@ export default function Navbar() {
                 <li><Link to="/about">About</Link></li>
                 <li><Link to="/cast">Meet the Cast</Link></li>
                 <li><Link to="/map">Map</Link></li>
+                <li><Link to="/company-portal">Company Portal</Link></li>
             </ul>
         </nav>
     )
