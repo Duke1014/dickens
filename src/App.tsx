@@ -6,7 +6,7 @@ import CompanyPortal from './pages/CompanyPortal';
 import Navbar from './components/Navbar';
 import Footbar from './components/Footbar';
 // import Sponsors from './components/Sponsors';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
