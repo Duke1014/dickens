@@ -1,0 +1,45 @@
+.admin-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.admin-container h1 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.admin-nav {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+}
+
+.admin-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.admin-tab:hover {
+  color: #333;
+}
+
+.admin-tab.active {
+  color: #000;
+  border-bottom-color: #007bff;
+}
+
+.admin-content {
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 20px;
+  min-height: 400px;
+}

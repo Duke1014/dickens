@@ -11,6 +11,8 @@ export default function Navbar() {
                 <li><Link to="/cast">Meet the Cast</Link></li>
                 <li><Link to="/map">Map</Link></li>
                 <li><Link to="/company-portal">Company Portal</Link></li>
+                <li><Link to="/admin">Admin</Link></li>
+                <li><Link to="/env-check">Env Check</Link></li>
             </ul>
         </nav>
     )

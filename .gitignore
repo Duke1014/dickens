@@ -11,6 +11,10 @@
 # production
 /build
 
+# Firebase
+.env
+dickens-christmas-skaneateles-firebase-adminsdk-fbsvc-88782cba21.json
+
 # misc
 .DS_Store
 .env.local
