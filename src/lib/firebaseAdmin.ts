@@ -43,7 +43,7 @@ export interface AppUser {
   id?: string;
   email: string;
   name: string;
-  role: 'admin' | 'cast' | 'user';
+  role: 'admin' | 'cast' ;
   createdAt?: Date;
   updatedAt?: Date;
 }
