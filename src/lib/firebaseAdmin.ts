@@ -18,8 +18,10 @@ import { db } from '../firebase';
 
 export interface CastMember {
   id?: string;
+  email?: string;
   name: string;
-  role: string;
+  role: 'admin' | 'cast';
+  years?: number[];
   bio?: string;
   photoUrl?: string;
   createdAt?: Date;
@@ -39,22 +41,17 @@ export interface CastPhoto extends GalleryPhoto {
   castMemberId: string;
 }
 
-export interface AppUser {
-  id?: string;
-  email: string;
-  name: string;
-  role: 'admin' | 'cast' ;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
+// AppUser merged into CastMember
 
 /**
  * Cast member operations
  */
 
 export async function addCastMember(member: CastMember): Promise<string> {
-  const docRef = await addDoc(collection(db, 'cast'), {
+  // Store cast members in the unified 'users' collection. Ensure role defaults to 'cast'.
+  const docRef = await addDoc(collection(db, 'users'), {
     ...member,
+    role: member.role || 'cast',
     createdAt: new Date(),
     updatedAt: new Date(),
   });
@@ -62,20 +59,24 @@ export async function addCastMember(member: CastMember): Promise<string> {
 }
 
 export async function updateCastMember(id: string, updates: Partial<CastMember>): Promise<void> {
-  const memberRef = doc(db, 'cast', id);
+  const memberRef = doc(db, 'users', id);
   await updateDoc(memberRef, {
     ...updates,
+    // enforce role stays 'cast' unless explicitly changed by backend/admin
+    ...(updates.role ? { role: updates.role } : {}),
     updatedAt: new Date(),
   });
 }
 
 export async function deleteCastMember(id: string): Promise<void> {
-  const memberRef = doc(db, 'cast', id);
+  const memberRef = doc(db, 'users', id);
   await deleteDoc(memberRef);
 }
 
 export async function getCastMembers(): Promise<CastMember[]> {
-  const querySnapshot = await getDocs(collection(db, 'cast'));
+  // Query the unified 'users' collection for entries with role == 'cast'
+  const q = query(collection(db, 'users'), where('role', '==', 'cast'));
+  const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
@@ -83,9 +84,12 @@ export async function getCastMembers(): Promise<CastMember[]> {
 }
 
 export async function getCastMember(id: string): Promise<CastMember | null> {
-  const docRef = doc(db, 'cast', id);
+  const docRef = doc(db, 'users', id);
   const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? ({ id: docSnap.id, ...docSnap.data() } as CastMember) : null;
+  if (!docSnap.exists()) return null;
+  const data = docSnap.data() as CastMember;
+  // ensure we only treat role=='cast' as a cast member
+  return data.role === 'cast' ? ({ id: docSnap.id, ...data } as CastMember) : null;
 }
 
 /**
@@ -156,7 +160,7 @@ export async function getCastPhotos(castMemberId: string): Promise<CastPhoto[]> 
  * User management operations (company portal)
  */
 
-export async function addUser(user: AppUser): Promise<string> {
+export async function addUser(user: CastMember): Promise<string> {
   const docRef = await addDoc(collection(db, 'users'), {
     ...user,
     createdAt: new Date(),
@@ -165,7 +169,7 @@ export async function addUser(user: AppUser): Promise<string> {
   return docRef.id;
 }
 
-export async function updateUser(id: string, updates: Partial<AppUser>): Promise<void> {
+export async function updateUser(id: string, updates: Partial<CastMember>): Promise<void> {
   const userRef = doc(db, 'users', id);
   await updateDoc(userRef, {
     ...updates,
@@ -178,7 +182,7 @@ export async function deleteUser(id: string): Promise<void> {
   await deleteDoc(userRef);
 }
 
-export async function getUsers(role?: string): Promise<AppUser[]> {
+export async function getUsers(role?: string): Promise<CastMember[]> {
   let q;
   if (role) {
     q = query(collection(db, 'users'), where('role', '==', role));
@@ -189,13 +193,13 @@ export async function getUsers(role?: string): Promise<AppUser[]> {
   return querySnapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-  })) as AppUser[];
+  })) as CastMember[];
 }
 
-export async function getUserByEmail(email: string): Promise<AppUser | null> {
+export async function getUserByEmail(email: string): Promise<CastMember | null> {
   const q = query(collection(db, 'users'), where('email', '==', email));
   const querySnapshot = await getDocs(q);
   if (querySnapshot.empty) return null;
   const doc = querySnapshot.docs[0];
-  return { id: doc.id, ...doc.data() } as AppUser;
+  return { id: doc.id, ...doc.data() } as CastMember;
 }

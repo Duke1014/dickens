@@ -25,43 +25,51 @@ export default function Login() {
             console.log('cred: ', cred);
             const user = cred.user;
 
-            // Check Firestore user role
+            // Determine whether the signed-in user has an admin custom claim.
+            // If so, make sure their users document reflects admin status and
+            // do NOT downgrade an existing admin. New users created client-side
+            // will be 'cast' unless the backend has set an admin claim.
             const profile = await getUserByEmail(user.email || '');
+            let isAdminClaim = false;
+            try {
+                const idTokenResult = await user.getIdTokenResult();
+                isAdminClaim = !!(idTokenResult?.claims && (idTokenResult.claims.admin || idTokenResult.claims.isAdmin));
+            } catch (err) {
+                // ignore token errors; we'll rely on stored role if available
+                // eslint-disable-next-line no-console
+                console.warn('Could not read id token claims:', err);
+            }
 
-            // Determine admin emails from environment variable (comma-separated)
-            // e.g. REACT_APP_ADMIN_EMAILS=admin@example.com,owner@example.com
-            const adminEmailsEnv = process.env.REACT_APP_ADMIN_EMAILS || '';
-            const adminEmails = adminEmailsEnv
-                .split(',')
-                .map((s) => s.trim().toLowerCase())
-                .filter(Boolean);
-
-            const isAdminEmail = user.email ? adminEmails.includes(user.email.toLowerCase()) : false;
-
-            if (isAdminEmail) {
-                // Ensure there's a users document and that it has role 'admin'
-                try {
-                    if (profile && profile.id) {
-                        if (profile.role !== 'admin') {
-                            await updateUser(profile.id, { role: 'admin' });
-                        }
-                    } else {
-                        await addUser({ email: user.email || '', name: user.displayName || '', role: 'admin' });
+            try {
+                if (profile) {
+                    // If backend claim says admin but profile isn't admin, promote it.
+                    if (isAdminClaim && profile.role !== 'admin') {
+                        await updateUser(profile.id!, { role: 'admin' });
                     }
-                } catch (err) {
-                    // non-fatal: log and continue to navigation
-                    // eslint-disable-next-line no-console
-                    console.error('Failed to ensure admin role for user:', err);
+                    // If profile exists, respect its role (don't downgrade admins).
+                } else {
+                    // No profile exists yet: create one. If claim says admin, create as admin,
+                    // otherwise create as cast.
+                    await addUser({
+                        email: user.email || '',
+                        name: user.displayName || '',
+                        role: isAdminClaim ? 'admin' : 'cast',
+                        years: [],
+                    });
                 }
+            } catch (err) {
+                // non-fatal: log and continue
+                // eslint-disable-next-line no-console
+                console.error('Failed to ensure user document role:', err);
+            }
 
+            // Final role decision: prefer backend custom claim if present, else stored role.
+            const finalProfile = await getUserByEmail(user.email || '');
+            const finalRole = isAdminClaim ? 'admin' : (finalProfile?.role || 'cast');
+            if (finalRole === 'admin') {
                 navigate('/admin');
             } else {
-                const role = profile?.role || null;
-                if (role === 'admin') {
-                    navigate('/admin');
-                } else {
-                    navigate('/company-portal');
-                }
+                navigate('/company-portal');
             }
         } catch (err: any) {
             // Log full error for diagnosis and show code+message to the UI

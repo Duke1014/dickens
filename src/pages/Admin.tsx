@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import GalleryManager from '../components/admin/GalleryManager';
-import CastManager from '../components/admin/CastManager';
 import UserManager from '../components/admin/UserManager';
 import '../styles/Admin.css';
 
@@ -20,12 +19,12 @@ export default function Admin() {
         >
           Gallery
         </button>
-        <button
+        {/* <button
           className={`admin-tab ${activeTab === 'cast' ? 'active' : ''}`}
           onClick={() => setActiveTab('cast')}
         >
           Cast
-        </button>
+        </button> */}
         <button
           className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => setActiveTab('users')}
@@ -36,7 +35,7 @@ export default function Admin() {
 
       <div className="admin-content">
         {activeTab === 'gallery' && <GalleryManager />}
-        {activeTab === 'cast' && <CastManager />}
+        {/* {activeTab === 'cast' && <CastManager />} */}
         {activeTab === 'users' && <UserManager />}
       </div>
     </div>
