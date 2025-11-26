@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { getUserByEmail } from '../lib/firebaseAdmin';
+import { getUserByEmail, addUser, updateUser } from '../lib/firebaseAdmin';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -27,12 +27,41 @@ export default function Login() {
 
             // Check Firestore user role
             const profile = await getUserByEmail(user.email || '');
-            const role = profile?.role || null;
 
-            if (role === 'admin') {
+            // Determine admin emails from environment variable (comma-separated)
+            // e.g. REACT_APP_ADMIN_EMAILS=admin@example.com,owner@example.com
+            const adminEmailsEnv = process.env.REACT_APP_ADMIN_EMAILS || '';
+            const adminEmails = adminEmailsEnv
+                .split(',')
+                .map((s) => s.trim().toLowerCase())
+                .filter(Boolean);
+
+            const isAdminEmail = user.email ? adminEmails.includes(user.email.toLowerCase()) : false;
+
+            if (isAdminEmail) {
+                // Ensure there's a users document and that it has role 'admin'
+                try {
+                    if (profile && profile.id) {
+                        if (profile.role !== 'admin') {
+                            await updateUser(profile.id, { role: 'admin' });
+                        }
+                    } else {
+                        await addUser({ email: user.email || '', name: user.displayName || '', role: 'admin' });
+                    }
+                } catch (err) {
+                    // non-fatal: log and continue to navigation
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to ensure admin role for user:', err);
+                }
+
                 navigate('/admin');
             } else {
-                navigate('/company-portal');
+                const role = profile?.role || null;
+                if (role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/company-portal');
+                }
             }
         } catch (err: any) {
             // Log full error for diagnosis and show code+message to the UI

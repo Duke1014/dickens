@@ -8,7 +8,7 @@ export default function UserManager() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ email: '', name: '', role: 'cast' as 'admin' | 'cast' | 'user' });
+  const [formData, setFormData] = useState({ email: '', name: '', role: 'cast' as 'admin' | 'cast' });
 
   useEffect(() => {
     loadUsers();
