@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import GalleryManager from '../components/admin/GalleryManager';
 import UserManager from '../components/admin/UserManager';
+import AnnouncementManager from '../components/admin/AnnouncementManager';
 import '../styles/Admin.css';
 
-type AdminTab = 'gallery' | 'cast' | 'users';
+type AdminTab = 'gallery' | 'announcements' | 'users';
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<AdminTab>('gallery');
@@ -19,12 +20,12 @@ export default function Admin() {
         >
           Gallery
         </button>
-        {/* <button
-          className={`admin-tab ${activeTab === 'cast' ? 'active' : ''}`}
-          onClick={() => setActiveTab('cast')}
+        <button
+          className={`admin-tab ${activeTab === 'announcements' ? 'active' : ''}`}
+          onClick={() => setActiveTab('announcements')}
         >
-          Cast
-        </button> */}
+          Announcements
+        </button>
         <button
           className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => setActiveTab('users')}
@@ -35,7 +36,7 @@ export default function Admin() {
 
       <div className="admin-content">
         {activeTab === 'gallery' && <GalleryManager />}
-        {/* {activeTab === 'cast' && <CastManager />} */}
+        {activeTab === 'announcements' && <AnnouncementManager />}
         {activeTab === 'users' && <UserManager />}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getGalleryPhotos, addGalleryPhoto, deleteGalleryPhoto, GalleryPhoto } from '../../lib/firebaseAdmin';
+import { isCurrentUserAdmin } from '../../db/admin';
 import '../../styles/ManagerStyles.css';
 
 export default function GalleryManager() {
@@ -8,10 +9,17 @@ export default function GalleryManager() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ title: '', description: '', url: '' });
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadPhotos();
+    checkAdminStatus();
   }, []);
+
+  async function checkAdminStatus() {
+    const adminStatus = await isCurrentUserAdmin();
+    setIsAdmin(adminStatus);
+  }
 
   async function loadPhotos() {
     try {
@@ -58,11 +66,13 @@ export default function GalleryManager() {
       <h2>General Gallery</h2>
       {error && <div className="error-message">{error}</div>}
 
-      <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-        {showForm ? 'Cancel' : 'Add Photo'}
-      </button>
+      {isAdmin && (
+        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Cancel' : 'Add Photo'}
+        </button>
+      )}
 
-      {showForm && (
+      {showForm && isAdmin && (
         <form className="form" onSubmit={handleAddPhoto}>
           <input
             type="text"
@@ -96,12 +106,14 @@ export default function GalleryManager() {
             <div className="photo-info">
               <h3>{photo.title}</h3>
               {photo.description && <p>{photo.description}</p>}
-              <button
-                className="btn btn-danger"
-                onClick={() => handleDeletePhoto(photo.id!)}
-              >
-                Delete
-              </button>
+              {isAdmin && (
+                <button
+                  className="btn btn-danger"
+                  onClick={() => handleDeletePhoto(photo.id!)}
+                >
+                  Delete
+                </button>
+              )}
             </div>
           </div>
         ))}

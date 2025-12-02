@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAuth } from 'firebase/auth';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail } from '../../lib/firebaseAdmin';
+import { isCurrentUserAdmin } from '../../db/admin';
 import '../../styles/ManagerStyles.css';
 
 export default function UserManager() {
@@ -12,7 +12,7 @@ export default function UserManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<{ email: string; name: string; years: number[] }>({ email: '', name: '', years: [] });
   const [isAdmin, setIsAdmin] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState('');
 
   useEffect(() => {
     loadUsers();
@@ -20,18 +20,9 @@ export default function UserManager() {
   }, []);
 
   async function checkAdminStatus() {
-    try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (user?.email) {
-        const profile = await getUserByEmail(user.email);
-        const adminStatus = profile?.role === 'admin';
-        setIsAdmin(adminStatus);
-        console.log('Admin check for', user.email, ':', adminStatus, 'role:', profile?.role);
-      }
-    } catch (err) {
-      console.error('Failed to check admin status:', err);
-    }
+    const adminStatus = await isCurrentUserAdmin();
+    setIsAdmin(adminStatus);
+    // console.log('Admin check:', adminStatus);
   }
 
   async function loadUsers() {
@@ -48,36 +39,26 @@ export default function UserManager() {
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>, userId: string) {
     if (!isAdmin) {
-      setError('Only admins can upload photos');
-      console.warn('Photo upload blocked: user is not admin');
+      setError('Only admins can update photos');
       return;
     }
 
-    const file = e.target.files?.[0];
-    if (!file) {
-      console.warn('No file selected');
+    const url = photoUrl.trim();
+    if (!url) {
+      setError('Please enter a photo URL');
       return;
     }
 
-    setUploading(true);
     try {
-      console.log('Starting photo upload for user:', userId, 'file:', file.name);
-      const storage = getStorage();
-      const storageRef = ref(storage, `cast-photos/${userId}/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const photoUrl = await getDownloadURL(storageRef);
-      console.log('Photo uploaded successfully. URL:', photoUrl);
-
       // Update the user with the photo URL
-      await updateUser(userId, { photoUrl });
-      console.log('User document updated with photo URL');
+      await updateUser(userId, { photoUrl: url });
+      console.log('User document updated with photo URL:', url);
       await loadUsers();
+      setPhotoUrl('');
       setError(null);
     } catch (err) {
-      console.error('Photo upload error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to upload photo');
-    } finally {
-      setUploading(false);
+      console.error('Photo update error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update photo');
     }
   }
 
@@ -180,21 +161,24 @@ export default function UserManager() {
           </div>
           {isAdmin && editingId && (
             <div>
-              <label htmlFor="photo-upload-form" style={{ display: 'block', marginBottom: '5px' }}>
-                Profile Photo:
+              <label htmlFor="photo-url-form" style={{ display: 'block', marginBottom: '5px' }}>
+                Profile Photo URL (paste image link):
               </label>
               <input
-                id="photo-upload-form"
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file && editingId) {
-                    handlePhotoUpload(e, editingId);
-                  }
-                }}
-                disabled={uploading}
+                id="photo-url-form"
+                type="url"
+                placeholder="https://example.com/photo.jpg"
+                value={photoUrl}
+                onChange={(e) => setPhotoUrl(e.target.value)}
               />
+              <button
+                type="button"
+                className="btn btn-small"
+                onClick={() => handlePhotoUpload({} as any, editingId)}
+                style={{ marginTop: '5px' }}
+              >
+                Save Photo
+              </button>
             </div>
           )}
           <button type="submit" className="btn btn-success">
