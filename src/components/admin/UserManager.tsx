@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
 import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail } from '../../lib/firebaseAdmin';
 import { isCurrentUserAdmin } from '../../db/admin';
+import { uploadHeadshot, deleteHeadshot } from '../../lib/storageHelper';
 import '../../styles/ManagerStyles.css';
 
 export default function UserManager() {
@@ -12,7 +13,9 @@ export default function UserManager() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState<{ email: string; name: string; years: number[] }>({ email: '', name: '', years: [] });
   const [isAdmin, setIsAdmin] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadUsers();
@@ -43,22 +46,43 @@ export default function UserManager() {
       return;
     }
 
-    const url = photoUrl.trim();
-    if (!url) {
-      setError('Please enter a photo URL');
+    const file = e.target.files?.[0];
+    if (!file) {
+      setError('Please select a file');
       return;
     }
 
+    setUploading(true);
     try {
-      // Update the user with the photo URL
-      await updateUser(userId, { photoUrl: url });
-      console.log('User document updated with photo URL:', url);
+      // Get current user to fetch old photo URL if it exists
+      const currentUser = users.find(u => u.id === userId);
+      const oldPhotoUrl = currentUser?.photoUrl;
+
+      // Upload the new photo to Firebase Storage
+      const downloadURL = await uploadHeadshot(userId, file);
+
+      // If there was an old photo, delete it
+      if (oldPhotoUrl) {
+        await deleteHeadshot(oldPhotoUrl).catch(err => {
+          console.warn('Could not delete old photo:', err);
+        });
+      }
+
+      // Update the user document with the new photo URL
+      await updateUser(userId, { photoUrl: downloadURL });
+      console.log('User document updated with photo URL:', downloadURL);
+      
       await loadUsers();
-      setPhotoUrl('');
+      setPhotoFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       setError(null);
     } catch (err) {
-      console.error('Photo update error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to update photo');
+      console.error('Photo upload error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to upload photo');
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -161,24 +185,32 @@ export default function UserManager() {
           </div>
           {isAdmin && editingId && (
             <div>
-              <label htmlFor="photo-url-form" style={{ display: 'block', marginBottom: '5px' }}>
-                Profile Photo URL (paste image link):
+              <label htmlFor="photo-file-form" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Upload Headshot:
               </label>
-              <input
-                id="photo-url-form"
-                type="url"
-                placeholder="https://example.com/photo.jpg"
-                value={photoUrl}
-                onChange={(e) => setPhotoUrl(e.target.value)}
-              />
-              <button
-                type="button"
-                className="btn btn-small"
-                onClick={() => handlePhotoUpload({} as any, editingId)}
-                style={{ marginTop: '5px' }}
-              >
-                Save Photo
-              </button>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input
+                  id="photo-file-form"
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                  disabled={uploading}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-small"
+                  onClick={() => handlePhotoUpload({ target: { files: photoFile ? [photoFile] : [] } } as any, editingId)}
+                  disabled={uploading || !photoFile}
+                  style={{ marginTop: 0 }}
+                >
+                  {uploading ? 'Uploading...' : 'Upload'}
+                </button>
+              </div>
+              <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                Max 5MB. Formats: JPG, PNG, WebP, etc.
+              </div>
             </div>
           )}
           <button type="submit" className="btn btn-success">

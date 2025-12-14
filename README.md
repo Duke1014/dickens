@@ -76,12 +76,42 @@ REACT_APP_FIREBASE_MEASUREMENT_ID=your_measurement_id
 	- A small initializer has been added at `src/firebase.ts`. Import `auth` and `db` where you need them:
 
 ```ts
-import { auth, db } from './firebase';
+import { auth, db, storage } from './firebase';
 ```
 
-6. (Optional) Firebase CLI and hosting
+6. Enable Firebase Storage
+	- In your Firebase project console, go to **Storage** and click **Get Started**.
+	- Choose appropriate security rules (see below for recommended rules).
+	- Your storage bucket is listed in your config as `REACT_APP_FIREBASE_STORAGE_BUCKET`.
+
+7. Storage Security Rules (Firestore)
+	- For development/testing, you can use permissive rules. Replace the default rules in your Firebase console with:
+	
+	```javascript
+	rules_version = '2';
+	service firebase.storage {
+	  match /b/{bucket}/o {
+	    // Allow authenticated users to upload and manage their own headshots
+	    match /headshots/{userId}/{allPaths=**} {
+	      allow read: if request.auth != null;
+	      allow write: if request.auth != null && request.auth.uid == userId;
+	      allow delete: if request.auth != null && request.auth.uid == userId;
+	    }
+	    // Allow public read access to other files
+	    match /{allPaths=**} {
+	      allow read: if true;
+	      allow write: if false;
+	    }
+	  }
+	}
+	```
+	- For production, further restrict access based on user roles (check your Firestore user document for admin status).
+
+8. (Optional) Firebase CLI and hosting
 	- Install the Firebase CLI (`npm install -g firebase-tools`) and run `firebase login` then `firebase init` to configure hosting and other services. Do not commit any service account JSON files or secrets.
 
 Security notes
  - `.env.local` is listed in `.gitignore` by default. Do not commit secrets or service account JSON files. If you use a server-side service account, keep the JSON file outside the repo and reference it in your CI/CD secrets instead.
+ - Firebase Storage files are uploaded to `headshots/{userId}/{filename}` paths. Ensure your security rules restrict upload access to authenticated users only.
+ - For production, consider implementing server-side custom claims (e.g., `admin` claim) and checking them in your Storage rules to prevent unauthorized uploads.
 

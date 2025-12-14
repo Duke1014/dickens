@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getAnnouncements, addAnnouncement, updateAnnouncement, deleteAnnouncement, Announcement } from '../../db/announcements';
-import { getAuth } from 'firebase/auth';
-import { getUserByEmail } from '../../lib/firebaseAdmin';
+// import { getAuth } from 'firebase/auth';
+// import { getUserByEmail } from '../../lib/firebaseAdmin';
 import { isCurrentUserAdmin } from '../../db/admin';
 
 export default function AnnouncementManager() {
@@ -99,17 +99,31 @@ export default function AnnouncementManager() {
       </form>
       <div>
         {announcements.length === 0 && <p>No announcements yet.</p>}
-        {announcements.map(a => (
+        {announcements.map(a => {
+          const createdDate = a.createdAt.toDate();
+          const formatted = createdDate.toLocaleDateString('en-US', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          });
+          const time = createdDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+          });
+          return (
           <div key={a.id} style={{ border: '1px solid #ccc', borderRadius: 4, padding: 12, marginBottom: 12 }}>
             <strong>{a.title}</strong>
             <p style={{ margin: '8px 0' }}>{a.message}</p>
-            <div style={{ fontSize: 12, color: '#888' }}>Posted: {a.createdAt.toDate().toLocaleString()}</div>
+            <div style={{ fontSize: 12, color: '#888' }}>Posted: {formatted} at {time}</div>
             <div style={{ marginTop: 8 }}>
               <button className="btn btn-small" onClick={() => handleEditAnnouncement(a)} style={{ marginRight: 8 }}>Edit</button>
               <button className="btn btn-danger btn-small" onClick={() => handleDeleteAnnouncement(a.id!)}>Delete</button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
