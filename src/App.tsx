@@ -4,9 +4,8 @@ import Cast from './pages/Cast';
 import Map from './pages/Map';
 import CompanyPortal from './pages/CompanyPortal';
 import Admin from './pages/Admin';
-import EnvCheck from './pages/EnvCheck';
-import Navbar from './components/Navbar';
-import Footbar from './components/Footbar';
+import Header from './components/Header';
+import Footer from './components/Footer';
 // import ProtectedRoute from './components/ProtectedRoute';
 // import Sponsors from './components/Sponsors';
 import { Routes, Route } from 'react-router-dom';
@@ -14,7 +13,7 @@ import { Routes, Route } from 'react-router-dom';
 function App() {
   return (
     <div className="App">
-      <Navbar />
+      <Header />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -30,12 +29,9 @@ function App() {
           }
         /> */}
         <Route path="/admin" element={<Admin />} />
-        {process.env.NODE_ENV === 'development' && (
-          <Route path="/env-check" element={<EnvCheck />} />
-        )}
       </Routes>
       {/* <Sponsors /> */}
-      <Footbar />
+      <Footer />
     </div>
   );
 }
