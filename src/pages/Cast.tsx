@@ -33,10 +33,10 @@ export default function Cast() {
                     }
                 });
 
-                // attach preferred photoUrl from castPhotos when available
-                const merged = (data || []).map((m) => ({ ...m, photoUrl: photoMap[m.id!] || (m as any).photoUrl || (m as any).photoURL }));
+                // attach preferred headshot from castPhotos when available
+                const merged = (data || []).map((m) => ({ ...m, headshot: photoMap[m.id!] || (m as any).headshot || (m as any).headshot }));
                 setCast(merged.filter((m) => m));
-                console.debug('Cast fetched', { count: merged.length, members: merged.map(mm => ({ id: mm.id, name: mm.name, photoUrl: (mm as any).photoUrl || (mm as any).photoURL })) });
+                console.debug('Cast fetched', { count: merged.length, members: merged.map(mm => ({ id: mm.id, name: ((mm as any).firstname || '') + ' ' + ((mm as any).lastname || '') || mm.name, headshot: (mm as any).headshot || (mm as any).headshot })) });
             } catch (err) {
                 console.error('Failed to load cast members', err);
             } finally {
@@ -76,12 +76,12 @@ export default function Cast() {
                         {cast.map((m) => (
                             <div key={m.id} style={{ padding: '6px 0', borderBottom: '1px solid #eee' }}>
                                 <div><strong>id:</strong> {m.id}</div>
-                                <div><strong>name:</strong> {m.name}</div>
+                                <div><strong>name:</strong> {(m as any).firstname || (m as any).name || ''} {(m as any).lastname || ''}</div>
                                 <div><strong>email:</strong> {(m as any).email}</div>
                                 <div><strong>role:</strong> {(m as any).role || '—'}</div>
-                                <div><strong>photo:</strong> {((m as any).photoUrl || (m as any).photoURL) ? 'yes' : 'no'}</div>
+                                <div><strong>photo:</strong> {((m as any).headshot || (m as any).headshot) ? 'yes' : 'no'}</div>
                                 <div style={{ fontSize: 12, color: '#666' }}>
-                                    <em>raw photoUrl:</em> {(m as any).photoUrl || (m as any).photoURL || '—'}
+                                    <em>raw headshot:</em> {(m as any).headshot || (m as any).headshot || '—'}
                                 </div>
                             </div>
                         ))}
@@ -104,13 +104,13 @@ export default function Cast() {
 
             <div className="cast-gallery">
                 {cast.map((member) => {
-                    const preferredPhoto = (member as any).photoUrl || (member as any).photoURL || null;
+                    const preferredPhoto = (member as any).headshot || (member as any).headshot || null;
                     return (
                         <div className="cast-card" key={member.id}>
                             {preferredPhoto ? (
                                 <img
                                     src={preferredPhoto}
-                                    alt={member.name}
+                                    alt={((member as any).firstname || '') + ' ' + ((member as any).lastname || '') || member.name}
                                     onError={(e) => {
                                         (e.currentTarget as HTMLImageElement).src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="100%" height="100%" fill="%23eee"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="%23999" font-size="20">No&nbsp;Photo</text></svg>';
                                     }}
@@ -120,7 +120,7 @@ export default function Cast() {
                                     No photo
                                 </div>
                             )}
-                            <h3>{member.name}</h3>
+                            <h3>{((member as any).firstname ? ((member as any).firstname + ' ') : '') + ((member as any).lastname || member.name || '')}</h3>
                         </div>
                     );
                 })}

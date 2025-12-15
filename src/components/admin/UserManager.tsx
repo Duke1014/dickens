@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
-import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail, addCastPhoto } from '../../lib/firebaseAdmin';
+import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail, addCastPhoto, deleteCastPhotosForMember } from '../../lib/firebaseAdmin';
 import { isCurrentUserAdmin } from '../../db/admin';
 import { uploadHeadshot, deleteHeadshot } from '../../lib/storageHelper';
 import '../../styles/ManagerStyles.css';
@@ -11,7 +11,7 @@ export default function UserManager() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<{ email: string; name: string; years: number[] }>({ email: '', name: '', years: [] });
+  const [formData, setFormData] = useState<{ email: string; firstname: string; lastname: string; years: number[] }>({ email: '', firstname: '', lastname: '', years: [] });
   const [isAdmin, setIsAdmin] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -57,21 +57,22 @@ export default function UserManager() {
     setUploading(true);
     try {
       // Get current user to fetch old photo URL if it exists
-      const currentUser = users.find(u => u.id === userId);
-      const oldPhotoUrl = currentUser?.photoUrl;
+  const currentUser = users.find(u => u.id === userId);
+  const oldHeadshot = (currentUser as any)?.headshot;
 
       // Upload the new photo to Firebase Storage
       const downloadURL = await uploadHeadshot(userId, file);
 
       // If there was an old photo, delete it
-      if (oldPhotoUrl) {
-        await deleteHeadshot(oldPhotoUrl).catch(err => {
+      if (oldHeadshot) {
+        await deleteHeadshot(oldHeadshot).catch(err => {
           console.warn('Could not delete old photo:', err);
         });
       }
 
       // Update the user document with the new photo URL
-      await updateUser(userId, { photoUrl: downloadURL });
+  // Cast the update to avoid mismatched Local CastMember typings in some build setups
+  await updateUser(userId, ({ headshot: downloadURL } as unknown) as Partial<CastMember>);
       console.log('User document updated with photo URL:', downloadURL);
       // Also add to cast photos (so it appears in the headshot gallery)
       try {
@@ -101,19 +102,23 @@ export default function UserManager() {
         // When editing: only update email, name, and years. Never touch the role field.
         await updateUser(editingId, {
           email: formData.email,
-          name: formData.name,
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+          name: `${formData.firstname} ${formData.lastname}`,
           years: formData.years,
         });
       } else {
         // When creating new user: set role to 'cast'
         await addUser({
           email: formData.email,
-          name: formData.name,
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+          name: `${formData.firstname} ${formData.lastname}`,
           role: 'cast',
           years: formData.years,
         });
       }
-      setFormData({ email: '', name: '', years: [] });
+      setFormData({ email: '', firstname: '', lastname: '', years: [] });
       setEditingId(null);
       setShowForm(false);
       await loadUsers();
@@ -123,9 +128,21 @@ export default function UserManager() {
   }
 
   function handleEdit(user: CastMember) {
+    // populate firstname/lastname from stored fields or split on name if needed
+    let first = '';
+    let last = '';
+    if ((user as any).firstname) {
+      first = (user as any).firstname;
+      last = (user as any).lastname || '';
+    } else if (user.name) {
+      const parts = user.name.split(' ');
+      first = parts.shift() || '';
+      last = parts.join(' ');
+    }
     setFormData({
       email: user.email || '',
-      name: user.name,
+      firstname: first,
+      lastname: last,
       years: user.years || [],
     });
     setEditingId(user.id!);
@@ -141,6 +158,37 @@ export default function UserManager() {
       setError(err instanceof Error ? err.message : 'Failed to delete user');
     }
   }
+
+  async function handleRemovePhoto(userId: string) {
+    if (!isAdmin) {
+      setError('Only admins can remove photos');
+      return;
+    }
+    if (!window.confirm('Remove this user\'s headshot? This will delete the file from Storage and remove gallery entries.')) return;
+    try {
+  const currentUser = users.find(u => u.id === userId);
+  const url = (currentUser as any)?.headshot;
+      if (!url) {
+        setError('No photo found for this user');
+        return;
+      }
+      // delete storage object
+      await deleteHeadshot(url);
+  // clear user document's headshot (use empty string to satisfy TS `string | undefined`)
+  await updateUser(userId, ({ headshot: '' } as unknown) as Partial<CastMember>);
+      // remove any castPhotos entries referencing this url for that user
+      await deleteCastPhotosForMember(userId, url);
+      await loadUsers();
+      setError(null);
+    } catch (err) {
+      console.error('Failed to remove photo:', err);
+      setError(err instanceof Error ? err.message : 'Failed to remove photo');
+    }
+  }
+
+  // current editing user (used to decide if upload is allowed or if existing headshot must be removed first)
+  const editingUser = editingId ? users.find(u => u.id === editingId) : null;
+  const editingUserHeadshot = (editingUser as any)?.headshot;
 
   if (loading) return <div>Loading users...</div>;
 
@@ -167,14 +215,21 @@ export default function UserManager() {
           />
           <input
             type="text"
-            placeholder="Full Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            placeholder="First Name"
+            value={formData.firstname}
+            onChange={(e) => setFormData({ ...formData, firstname: e.target.value })}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Last Name"
+            value={formData.lastname}
+            onChange={(e) => setFormData({ ...formData, lastname: e.target.value })}
             required
           />
           <label>Years on Cast:</label>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
-            {Array.from({ length: new Date().getFullYear() - 1990 + 1 }, (_, i) => 1990 + i).map(year => (
+            {Array.from({ length: new Date().getFullYear() - 1994 + 1 }, (_, i) => new Date().getFullYear() - i).map(year => (
               <label key={year} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                 <input
                   type="checkbox"
@@ -196,29 +251,40 @@ export default function UserManager() {
               <label htmlFor="photo-file-form" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
                 Upload Headshot:
               </label>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <input
-                  id="photo-file-form"
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
-                  disabled={uploading}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-small"
-                  onClick={() => handlePhotoUpload({ target: { files: photoFile ? [photoFile] : [] } } as any, editingId)}
-                  disabled={uploading || !photoFile}
-                  style={{ marginTop: 0 }}
-                >
-                  {uploading ? 'Uploading...' : 'Upload'}
-                </button>
-              </div>
-              <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                Max 5MB. Formats: JPG, PNG, WebP, etc.
-              </div>
+              {editingUserHeadshot ? (
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                  <div style={{ fontSize: '13px', color: '#333' }}>A headshot already exists for this user — please remove it first before uploading a new one.</div>
+                  <button className="btn btn-danger btn-small" onClick={() => handleRemovePhoto(editingId!)}>
+                    Remove Existing Headshot
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input
+                      id="photo-file-form"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setPhotoFile(e.target.files?.[0] || null)}
+                      disabled={uploading}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-small"
+                      onClick={() => handlePhotoUpload({ target: { files: photoFile ? [photoFile] : [] } } as any, editingId)}
+                      disabled={uploading || !photoFile}
+                      style={{ marginTop: 0 }}
+                    >
+                      {uploading ? 'Uploading...' : 'Upload'}
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+                    Max 5MB. Formats: JPG, PNG, WebP, etc.
+                  </div>
+                </>
+              )}
             </div>
           )}
           <button type="submit" className="btn btn-success">
@@ -231,7 +297,8 @@ export default function UserManager() {
         <table className="user-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>First Name</th>
+              <th>Last Name</th>
               <th>Email</th>
               <th>Years</th>
               <th>Actions</th>
@@ -242,16 +309,22 @@ export default function UserManager() {
               <tr key={user.id}>
                 <td>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {user.photoUrl && (
-                      <img
-                        src={user.photoUrl}
-                        alt={user.name}
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
-                      />
+                    {(user as any).headshot && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <img
+                          src={(user as any).headshot}
+                          alt={(user.firstname || '') + ' ' + (user.lastname || '')}
+                          style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                        <button className="btn btn-small" onClick={() => handleRemovePhoto(user.id!)} style={{ marginLeft: 6 }}>
+                          Remove
+                        </button>
+                      </div>
                     )}
-                    {user.name}
+                    {user.firstname || user.name || ''}
                   </div>
                 </td>
+                <td>{user.lastname || ''}</td>
                 <td>{user.email}</td>
                 <td>
                   {user.years && user.years.length > 0 ? user.years.join(', ') : ''}

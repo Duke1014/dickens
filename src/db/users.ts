@@ -11,7 +11,8 @@ import { doc, getDoc, setDoc, type DocumentData } from 'firebase/firestore';
 export interface UserProfile {
 	uid: string;
 	email?: string | null;
-	displayName?: string | null;
+	firstname?: string | null;
+	lastname?: string | null;
 	// add any application-specific fields below
 	roles?: string[];
 	[key: string]: any;
@@ -30,10 +31,16 @@ export async function signUpWithEmail(
 	const user = credential.user;
 
 	// Create a Firestore document for the user
+	// Prefer profile values; otherwise infer from Firebase user displayName
+	const displayNameParts = user.displayName ? user.displayName.split(' ') : [];
+	const inferredFirst = profile.firstname ?? (displayNameParts.length ? displayNameParts.shift() || null : null);
+	const inferredLast = profile.lastname ?? (displayNameParts.length ? displayNameParts.join(' ') : null);
+
 	const userDoc: UserProfile = {
 		uid: user.uid,
 		email: user.email,
-		displayName: user.displayName ?? profile.displayName ?? null,
+		firstname: inferredFirst ?? null,
+		lastname: inferredLast ?? null,
 		roles: profile.roles ?? ['user'],
 		...profile,
 	};

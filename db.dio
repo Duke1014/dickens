@@ -1,0 +1,69 @@
+<mxfile host="65bd71144e">
+    <diagram id="pu51KaUnQh9Pns26O76v" name="Page-1">
+        <mxGraphModel dx="1204" dy="795" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="USERS" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" width="140" height="270" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="firstname: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="30" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="lastname: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="60" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="role: &#39;user&#39; | &#39;admin&#39;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="90" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="email: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="120" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="password: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="150" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="headshot: string (url)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="180" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="years: int[]" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="210" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="bio: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="2">
+                    <mxGeometry y="240" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;Dickens Christmas in Skaneateles&lt;/h1&gt;&lt;p&gt;This website is used for multiple purposes.&lt;/p&gt;&lt;p&gt;1. For every user, this acts as a landing page for information on the Dickens Christmas in Skaneateles show that appears on the streets of Skaneateles, NY from the Friday after Thanksgiving, occuring every weekend until Christmas Eve from 12p to 4p, including the day of Christmas Eve from 12p to 2:30p.&lt;/p&gt;&lt;p&gt;This website will also host the headshots of the actors in the Dickens Christmas in Skaneateles cast, as well as a gallery of photos to give a sense of what goes on during the day of this show.&lt;/p&gt;&lt;p&gt;2.&amp;nbsp; For the cast of the show, there will be a section that can only be accessed through the means of an admin giving access via creation of the user. The cast member will then create their own password to keep to themselves.&lt;/p&gt;&lt;p&gt;The cast member will have access to announcements given by the admins of the team (the company manager, directors, and other staff).&lt;/p&gt;&lt;p&gt;Each member has a year associated with their account. As the show goes on, there are more and more cast members added to the roster, and others may not return the following year. In this case, the admins will have control over which year(s) the user belongs to. If the user does not belong to the current year of the show, they will not be able to see the company portal of the current year.&amp;nbsp;&lt;/p&gt;&lt;p&gt;Stretch goals:&amp;nbsp;&lt;/p&gt;&lt;p&gt;- allowing past members to see the announcements and messages of the years past they were associated with to preserve history&lt;/p&gt;&lt;p&gt;- a messaging forum for all to participate in. This way, extracurricular activities around the show run can be organized with the current cast of that year (potluck dinners, gatherings/outings, cast dinners/parties/meetings, extra rehearsals, etc.)&lt;/p&gt;&lt;p&gt;- a section to hear cast recordings of songs to practice along with for actors&lt;/p&gt;&lt;p&gt;3. Ultimately, the website will become a form of advertisement for interested viewers around the world, and will include links to social media pages and the Skaneateles town website.&amp;nbsp;&lt;/p&gt;&lt;p&gt;Stretch goals:&lt;/p&gt;&lt;p&gt;- a map of the many town sponsors, with preferences given to the higher tiered sponsors, including food and drink joints for anyone new to Skaneateles to familiarize themselves throughout the day.&lt;/p&gt;" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry width="450" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="Announcements" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="520" y="360" width="140" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="message: string" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="12">
+                    <mxGeometry y="30" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="created_at: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="12">
+                    <mxGeometry y="60" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="updated_at: date" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="12">
+                    <mxGeometry y="90" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="user_id: int" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" vertex="1" parent="12">
+                    <mxGeometry y="120" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="5" target="19">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="710" y="300" as="sourcePoint"/>
+                        <mxPoint x="740" y="460" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="810" y="105"/>
+                            <mxPoint x="810" y="280"/>
+                            <mxPoint x="810" y="495"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="18" value="Only admins&lt;div&gt;&amp;nbsp;can create&amp;nbsp;&lt;/div&gt;&lt;div&gt;announcements!&lt;/div&gt;" style="edgeLabel;resizable=0;html=1;;align=center;verticalAlign=middle;" connectable="0" vertex="1" parent="17">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

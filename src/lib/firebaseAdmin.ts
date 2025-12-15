@@ -19,7 +19,10 @@ import { db } from '../firebase';
 export interface CastMember {
   id?: string;
   email?: string;
-  name: string;
+  // Support separate first/last name fields for easier sorting. Keep `name` for backward compatibility.
+  name?: string;
+  firstname?: string | null;
+  lastname?: string | null;
   role: 'admin' | 'cast';
   years?: number[];
   bio?: string;
@@ -142,6 +145,29 @@ export async function addCastPhoto(photo: CastPhoto): Promise<string> {
 export async function deleteCastPhoto(id: string): Promise<void> {
   const photoRef = doc(db, 'castPhotos', id);
   await deleteDoc(photoRef);
+}
+
+/**
+ * Delete castPhotos documents for a cast member. If `url` is provided, only delete
+ * photos matching that url; otherwise delete all photos for the member.
+ */
+export async function deleteCastPhotosForMember(castMemberId: string, url?: string): Promise<void> {
+  let q;
+  if (url) {
+    q = query(
+      collection(db, 'castPhotos'),
+      where('castMemberId', '==', castMemberId),
+      where('url', '==', url)
+    );
+  } else {
+    q = query(collection(db, 'castPhotos'), where('castMemberId', '==', castMemberId));
+  }
+  const snaps = await getDocs(q);
+  const deletes: Promise<void>[] = [];
+  snaps.docs.forEach((d) => {
+    deletes.push(deleteDoc(doc(db, 'castPhotos', d.id)));
+  });
+  await Promise.all(deletes);
 }
 
 export async function getCastPhotos(castMemberId: string): Promise<CastPhoto[]> {
