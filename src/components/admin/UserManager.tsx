@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
-import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail } from '../../lib/firebaseAdmin';
+import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail, addCastPhoto } from '../../lib/firebaseAdmin';
 import { isCurrentUserAdmin } from '../../db/admin';
 import { uploadHeadshot, deleteHeadshot } from '../../lib/storageHelper';
 import '../../styles/ManagerStyles.css';
@@ -41,8 +41,10 @@ export default function UserManager() {
   }
 
   async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>, userId: string) {
-    if (!isAdmin) {
-      setError('Only admins can update photos');
+    // allow admins or the owner (user uploading to their own folder)
+    const currentUid = getAuth().currentUser?.uid;
+    if (!isAdmin && currentUid !== userId) {
+      setError('Only admins or the user themselves can update this photo');
       return;
     }
 
@@ -71,6 +73,12 @@ export default function UserManager() {
       // Update the user document with the new photo URL
       await updateUser(userId, { photoUrl: downloadURL });
       console.log('User document updated with photo URL:', downloadURL);
+      // Also add to cast photos (so it appears in the headshot gallery)
+      try {
+        await addCastPhoto({ url: downloadURL, title: 'Headshot', description: '', castMemberId: userId });
+      } catch (err) {
+        console.warn('Failed to add cast photo entry:', err);
+      }
       
       await loadUsers();
       setPhotoFile(null);

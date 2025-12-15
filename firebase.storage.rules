@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Headshots: readable by anyone. Writable by the authenticated owner of the folder (uid) or by users
+    // with an 'admin' custom claim.
+    match /headshots/{uid}/{fileName} {
+      allow read: if true;
+      // Allow writes when the authenticated user is the owner (request.auth.uid == uid)
+      // OR when the authenticated user has the 'admin' custom claim (request.auth.token.admin == true).
+      // Many projects store admin status in Firestore (a user doc) rather than as custom claims.
+      // If you haven't set custom claims, you can temporarily allow specific admin emails here.
+      allow write: if request.auth != null && (
+        request.auth.uid == uid
+        || request.auth.token.admin == true
+        || request.auth.token.email in [
+          'duke.norsworthy@gmail.com',
+          'bn@rochester.rr.com'
+        ]
+      );
+    }
+
+    // Optionally, deny all other writes by default
+    match /{allPaths=**} {
+      allow read: if false;
+      allow write: if false;
+    }
+  }
+}

@@ -75,7 +75,7 @@ export async function deleteCastMember(id: string): Promise<void> {
 
 export async function getCastMembers(): Promise<CastMember[]> {
   // Query the unified 'users' collection for entries with role == 'cast'
-  const q = query(collection(db, 'users'), where('role', '==', 'cast'));
+  const q = query(collection(db, 'users'));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map((doc) => ({
     id: doc.id,

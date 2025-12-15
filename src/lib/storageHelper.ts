@@ -1,4 +1,5 @@
 import { storage } from '../firebase';
+import { getAuth } from 'firebase/auth';
 import {
   ref,
   uploadBytes,
@@ -25,10 +26,20 @@ export async function uploadHeadshot(
     throw new Error(`File must be smaller than ${maxSizeMB}MB`);
   }
 
+  // Sanitize filename (remove or replace spaces and control chars)
+  const safeFileName = file.name.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9._-]/g, '');
   // Create a reference path: headshots/{userId}/filename
   const timestamp = Date.now();
-  const storagePath = `headshots/${userId}/${timestamp}-${file.name}`;
+  const storagePath = `headshots/${userId}/${timestamp}-${safeFileName}`;
   const storageRef = ref(storage, storagePath);
+
+  // Log helpful debug info to aid troubleshooting if uploads fail due to rules
+  try {
+    const auth = getAuth();
+    console.debug('Uploading headshot', { storageBucket: (storage as any).bucket || '(unknown)', currentUserUid: auth.currentUser?.uid });
+  } catch (err) {
+    console.debug('Uploading headshot (could not get auth info)', err);
+  }
 
   // Upload the file
   await uploadBytes(storageRef, file);
