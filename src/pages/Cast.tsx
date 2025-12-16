@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getCastMembers, CastMember } from '../lib/firebaseAdmin';
-import '../styles/index.css';
+import '../styles/cast.css';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -121,6 +121,7 @@ export default function Cast() {
                                 </div>
                             )}
                             <h3>{((member as any).firstname ? ((member as any).firstname + ' ') : '') + ((member as any).lastname || member.name || '')}</h3>
+                            <p className='cast-bio'>bio goes here :)</p>
                         </div>
                     );
                 })}

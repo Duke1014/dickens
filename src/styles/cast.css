@@ -1,0 +1,13 @@
+.cast-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+
+}
+
+.cast-card img, .cast-card .placeholder {
+    width: 200px;
+    height: 250px;
+    object-fit: cover;
+}
