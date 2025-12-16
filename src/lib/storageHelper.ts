@@ -5,7 +5,7 @@ import {
   uploadBytes,
   getDownloadURL,
   deleteObject,
-  StorageReference,
+  // StorageReference,
 } from 'firebase/storage';
 
 /**

@@ -1,12 +1,12 @@
-import { auth, db } from '../firebase';
-import {
-	createUserWithEmailAndPassword,
-	signInWithEmailAndPassword,
-	signOut as firebaseSignOut,
-	onAuthStateChanged,
-	type User as FirebaseUser,
-} from 'firebase/auth';
-import { doc, getDoc, setDoc, type DocumentData } from 'firebase/firestore';
+// import { auth, db } from '../firebase';
+// import {
+// 	createUserWithEmailAndPassword,
+// 	signInWithEmailAndPassword,
+// 	signOut as firebaseSignOut,
+// 	onAuthStateChanged,
+// 	type User as FirebaseUser,
+// } from 'firebase/auth';
+// import { doc, getDoc, setDoc, type DocumentData } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getUserByEmail } from '../lib/firebaseAdmin';
 

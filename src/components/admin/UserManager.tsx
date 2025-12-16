@@ -1,6 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
-import { getUsers, addUser, updateUser, deleteUser, CastMember, getUserByEmail, addCastPhoto, deleteCastPhotosForMember } from '../../lib/firebaseAdmin';
+import { 
+  getUsers, 
+  addUser, 
+  updateUser, 
+  deleteUser, 
+  CastMember, 
+  // getUserByEmail, 
+  addCastPhoto, 
+  deleteCastPhotosForMember 
+} from '../../lib/firebaseAdmin';
 import { isCurrentUserAdmin } from '../../db/admin';
 import { uploadHeadshot, deleteHeadshot } from '../../lib/storageHelper';
 import '../../styles/ManagerStyles.css';
