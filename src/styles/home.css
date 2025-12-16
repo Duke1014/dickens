@@ -1,0 +1,6 @@
+section .cover {
+    background-image: url('../assets/DickensCover.jpg');
+    max-width: '100%';
+    height: 'auto'; 
+}
+
