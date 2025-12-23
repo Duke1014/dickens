@@ -7,7 +7,7 @@ import { db } from '../firebase';
 export default function Cast() {
     const [cast, setCast] = useState<CastMember[]>([]);
     const [loading, setLoading] = useState(true);
-    const [showDebug, setShowDebug] = useState(false);
+    // const [showDebug, setShowDebug] = useState(false);
     const [rawUsers, setRawUsers] = useState<any[] | null>(null);
 
     useEffect(() => {
@@ -50,7 +50,7 @@ export default function Cast() {
 
     return (
         <div>
-            <div style={{ marginBottom: 12 }}>
+            {/* <div style={{ marginBottom: 12 }}>
                 <button className="btn btn-small" onClick={() => setShowDebug((s) => !s)}>
                     {showDebug ? 'Hide' : 'Show'} Cast Debug ({cast.length})
                 </button>
@@ -100,7 +100,7 @@ export default function Cast() {
                         </div>
                     )}
                 </div>
-            )}
+            )} */}
 
             <div className="cast-gallery">
                 {cast.map((member) => {
@@ -116,7 +116,7 @@ export default function Cast() {
                                     }}
                                 />
                             ) : (
-                                <div style={{ width: 200, height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eee', color: '#999' }}>
+                                <div style={{ width: 200, height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#eee', color: '#999' }}>
                                     No photo
                                 </div>
                             )}

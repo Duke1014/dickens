@@ -229,3 +229,45 @@ export async function getUserByEmail(email: string): Promise<CastMember | null> 
   const doc = querySnapshot.docs[0];
   return { id: doc.id, ...doc.data() } as CastMember;
 }
+
+/**
+ * Sponsors
+ */
+export interface Sponsor {
+  id?: string;
+  name: string;
+  website?: string;
+  tier: number; // 1 = lowest, higher is more prominent
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export async function addSponsor(sponsor: { name: string; website?: string; tier: number }): Promise<string> {
+  const docRef = await addDoc(collection(db, 'sponsors'), {
+    ...sponsor,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+}
+
+export async function updateSponsor(id: string, updates: Partial<Sponsor>): Promise<void> {
+  const sponsorRef = doc(db, 'sponsors', id);
+  await updateDoc(sponsorRef, {
+    ...updates,
+    updatedAt: new Date(),
+  });
+}
+
+export async function deleteSponsor(id: string): Promise<void> {
+  const sponsorRef = doc(db, 'sponsors', id);
+  await deleteDoc(sponsorRef);
+}
+
+export async function getSponsors(): Promise<Sponsor[]> {
+  const querySnapshot = await getDocs(collection(db, 'sponsors'));
+  return querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  })) as Sponsor[];
+}
